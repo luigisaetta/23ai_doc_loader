@@ -7,8 +7,9 @@ This repo contains all the code for utilities to load documents and embeddings i
 ## Environment
 The code has been tested with Python 3.11.
 
-To install all the required packages, download the filr requirements.txt
+To install all the required packages, download the file requirements.txt
 and the execute:
 
+```
 pip install -r requirements.txt
-
+```
