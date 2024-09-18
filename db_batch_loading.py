@@ -10,34 +10,19 @@ sept 2024: refactored to reduce dependencies
 import sys
 import argparse
 from glob import glob
-import numpy as np
 
 from chunk_index_utils import (
     load_book_and_split,
+)
+from db_doc_loader_backend import (
+    get_list_collections,
+    get_embed_model,
     create_collection_and_add_docs_to_23ai,
 )
-from db_doc_loader_backend import get_list_collections, get_embed_model
 
-from utils import get_console_logger
+from utils import get_console_logger, compute_stats
 
 from config import CHUNK_SIZE, CHUNK_OVERLAP, BOOKS_DIR
-
-
-def compute_stats(list_docs):
-    """
-    Compute stats for the distribution of chunks' lengths
-
-    list_docs: LangChain list of Documents
-    """
-    lengths = [len(d.page_content) for d in list_docs]
-
-    mean_length = int(round(np.mean(lengths), 0))
-
-    std_dev = int(round(np.std(lengths), 0))
-
-    perc_75_len = int(round(np.percentile(lengths, 75), 0))
-
-    return mean_length, std_dev, perc_75_len
 
 
 #

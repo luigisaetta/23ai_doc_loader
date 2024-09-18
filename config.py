@@ -36,3 +36,6 @@ EMBEDDINGS_BITS = 32
 
 # Vector Store
 VECTOR_STORE_TYPE = "23AI"
+
+# to enable ADB connection
+ADB = True

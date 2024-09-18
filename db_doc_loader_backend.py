@@ -8,6 +8,7 @@ import os
 import tempfile
 import oracledb
 
+from langchain_community.vectorstores.utils import DistanceStrategy
 from oraclevs_4_db_loading import OracleVS4DBLoading
 from oci_cohere_embeddings_utils import OCIGenAIEmbeddingsWithBatch
 from translations import translations
@@ -15,12 +16,10 @@ from utils import get_console_logger, check_value_in_list
 
 from chunk_index_utils import (
     load_book_and_split,
-    add_docs_to_23ai,
-    create_collection_and_add_docs_to_23ai,
 )
 
-from config_private import DB_USER, DB_PWD, DB_HOST_IP, DB_SERVICE, COMPARTMENT_ID
-from config import ENDPOINT, OCI_EMBED_MODEL
+from config_private import DB_USER, DB_PWD, DSN, TNS_ADMIN, WALLET_PWD, COMPARTMENT_ID
+from config import ENDPOINT, OCI_EMBED_MODEL, ADB
 
 logger = get_console_logger()
 
@@ -29,9 +28,17 @@ def get_db_connection():
     """
     get a connection to db
     """
-    dsn = f"{DB_HOST_IP}/{DB_SERVICE}"
 
-    conn = oracledb.connect(user=DB_USER, password=DB_PWD, dsn=dsn, retry_count=3)
+    # common params
+    conn_parms = {"user": DB_USER, "password": DB_PWD, "dsn": DSN, "retry_count": 3}
+
+    if ADB:
+        # connection to ADB, needs wallet
+        conn_parms["config_dir"] = TNS_ADMIN
+        conn_parms["wallet_location"] = TNS_ADMIN
+        conn_parms["wallet_password"] = WALLET_PWD
+
+    conn = oracledb.connect(**conn_parms)
 
     return conn
 
@@ -158,3 +165,55 @@ def delete_documents_in_collection(collection_name, doc_names):
 
         logger.info("Delete docs: %s in collection %s", doc_names, collection_name)
         OracleVS4DBLoading.delete_documents(conn, collection_name, doc_names)
+
+
+def create_collection_and_add_docs_to_23ai(docs, embed_model, collection_name):
+    """
+    create the collection and load docs in that collection
+    To be used only for a NEW collection
+    """
+
+    try:
+        conn = get_db_connection()
+
+        OracleVS4DBLoading.from_documents(
+            docs,
+            embed_model,
+            client=conn,
+            table_name=collection_name,
+            distance_strategy=DistanceStrategy.COSINE,
+        )
+
+        logger.info("Created collection and documents saved...")
+
+    except oracledb.Error as e:
+        err_msg = "An error occurred in create_collection_and_add_docs: " + str(e)
+        logger.error(err_msg)
+
+
+def add_docs_to_23ai(docs, embed_model, collection_name):
+    """
+    add docs from a book to Oracle vector store
+    This is used for an existing collection
+    """
+
+    try:
+
+        conn = get_db_connection()
+
+        v_store = OracleVS4DBLoading(
+            client=conn,
+            table_name=collection_name,
+            distance_strategy=DistanceStrategy.COSINE,
+            embedding_function=embed_model,
+        )
+
+        logger.info("Saving new documents to Vector Store...")
+
+        v_store.add_documents(docs)
+
+        logger.info("Saved new documents to Vector Store !")
+
+    except oracledb.Error as e:
+        err_msg = "An error occurred in add_docs_to_23ai: " + str(e)
+        logger.error(err_msg)

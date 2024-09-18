@@ -7,6 +7,7 @@ Python Version: 3.11
 
 import logging
 import os
+import numpy as np
 
 
 def debug_bool(b_str):
@@ -60,3 +61,20 @@ def check_value_in_list(value, values_list):
         raise ValueError(
             f"Value {value} is not valid: value must be in list {values_list}"
         )
+
+
+def compute_stats(list_docs):
+    """
+    Compute stats for the distribution of chunks' lengths
+
+    list_docs: LangChain list of Documents
+    """
+    lengths = [len(d.page_content) for d in list_docs]
+
+    mean_length = int(round(np.mean(lengths), 0))
+
+    std_dev = int(round(np.std(lengths), 0))
+
+    perc_75_len = int(round(np.percentile(lengths, 75), 0))
+
+    return mean_length, std_dev, perc_75_len

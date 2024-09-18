@@ -1,5 +1,5 @@
 """
-Extensions to Oracle VS
+Extensions to Oracle VS for the db_loading utility
 """
 
 import os
