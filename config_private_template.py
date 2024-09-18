@@ -5,14 +5,14 @@ Date last modified: 2024-04-28
 Python Version: 3.11
 """
 
-# example of settings for Base DB servivce
+# example of settings for Base DB service
 DB_USER = "your username"
 DB_PWD = "your pwd"
 DB_HOST_IP = "your ip"
 DB_SERVICE = "your service name"
 
 # example of settings for ADB (23AI +)
-# remember to set ADB = TRue in config.py
+# remember to set ADB = True in config.py
 DB_USER = "your username"
 DB_PWD = "your pwd"
 # must be the connection string in tnsnames.ora
