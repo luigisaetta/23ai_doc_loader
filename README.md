@@ -29,5 +29,12 @@ and execute:
 pip install -r requirements.txt
 ```
 
+## Utilities available
+* **test** the connection with test_db_connection.py
+* do a **first loading** with db_ai_first_load.sh
+* **list** the document loaded in the collection with db_list_documents.py
+* add **more documents** with db_add-documents.py
+* **drop** a collection with db_drop_collection.py
+
 ## References
 * [OracleVS](https://python.langchain.com/v0.2/docs/integrations/vectorstores/oracle/)
