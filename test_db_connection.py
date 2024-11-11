@@ -1,5 +1,5 @@
 """
-Test connction to Vector Store
+Test connection to Vector Store
 """
 from db_doc_loader_backend import get_db_connection
 from utils import get_console_logger
