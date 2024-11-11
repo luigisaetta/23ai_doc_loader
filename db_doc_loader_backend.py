@@ -1,5 +1,5 @@
 """
-RFX docs loader backend function
+Docs loader backend function
 
 to separate UI logic from backend logic
 """
@@ -9,8 +9,8 @@ import tempfile
 import oracledb
 
 from langchain_community.vectorstores.utils import DistanceStrategy
+from langchain_community.embeddings import OCIGenAIEmbeddings
 from oraclevs_4_db_loading import OracleVS4DBLoading
-from oci_cohere_embeddings_utils import OCIGenAIEmbeddingsWithBatch
 from translations import translations
 from utils import get_console_logger, check_value_in_list
 
@@ -41,7 +41,7 @@ def get_db_connection():
         conn_parms["wallet_password"] = WALLET_PWD
 
     logger.info("")
-    logger.info(f"Connecting as user {DB_USER} to DSN: {DSN}")
+    logger.info("Connecting as USER: %s to DSN: %s", DB_USER, DSN)
 
     conn = oracledb.connect(**conn_parms)
 
@@ -57,7 +57,7 @@ def get_embed_model(model_type="OCI"):
     embed_model = None
 
     if model_type == "OCI":
-        embed_model = OCIGenAIEmbeddingsWithBatch(
+        embed_model = OCIGenAIEmbeddings(
             auth_type="API_KEY",
             model_id=OCI_EMBED_MODEL,
             service_endpoint=ENDPOINT,

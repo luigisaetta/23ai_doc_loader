@@ -1,8 +1,6 @@
 """
-Print the list of documents in the collection
+Print the list of collections in the schema
 """
-
-import argparse
 
 from db_doc_loader_backend import get_db_connection
 from oraclevs_4_db_loading import OracleVS4DBLoading
