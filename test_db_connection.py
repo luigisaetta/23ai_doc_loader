@@ -11,6 +11,7 @@ try:
 
     logger.info("")
     logger.info("Connection OK")
+    logger.info("")
 
 except Exception as e:
     logger.error("Error testing connection...")

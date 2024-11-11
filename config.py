@@ -29,7 +29,7 @@ LANG_SUPPORTED = ["en", "it", "es", "fr", "de", "el", "nl", "ro"]
 # value: OCI
 EMBED_MODEL_TYPE = "OCI"
 EMBED_BATCH_SIZE = 90
-OCI_EMBED_MODEL = "cohere.embed-multilingual-v3.0"
+OCI_EMBED_MODEL = "cohere.embed-english-v3.0"
 
 # Oracle VS
 EMBEDDINGS_BITS = 32
@@ -38,4 +38,4 @@ EMBEDDINGS_BITS = 32
 VECTOR_STORE_TYPE = "23AI"
 
 # to enable ADB connection
-ADB = False
+ADB = True

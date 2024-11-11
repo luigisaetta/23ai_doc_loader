@@ -23,7 +23,7 @@ logger = get_console_logger()
 
 parser = argparse.ArgumentParser(description="Document batch loading.")
 
-parser.add_argument("collection_name", type=str, help="collection name to drop.")
+parser.add_argument("collection_name", type=str, help="collection name to add documents to.")
 parser.add_argument("books_dir", type=str, help="Dir with the books to load.")
 
 args = parser.parse_args()

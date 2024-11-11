@@ -40,6 +40,7 @@ def get_db_connection():
         conn_parms["wallet_location"] = TNS_ADMIN
         conn_parms["wallet_password"] = WALLET_PWD
 
+    logger.info("")
     logger.info(f"Connecting as user {DB_USER} to DSN: {DSN}")
 
     conn = oracledb.connect(**conn_parms)
