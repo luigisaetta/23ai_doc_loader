@@ -54,6 +54,10 @@ def get_embed_model(model_type="OCI"):
     """
     check_value_in_list(model_type, ["OCI"])
 
+    logger.info("")
+    logger.info("Using embedding model: %s", OCI_EMBED_MODEL)
+    logger.info("")
+
     embed_model = None
 
     if model_type == "OCI":
