@@ -1,2 +1,4 @@
-python db_drop_collection.py TEST11
+python db_drop_collection.py BVTECH
+
+
 
