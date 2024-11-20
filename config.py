@@ -9,9 +9,6 @@ Python Version: 3.11
 # current endpoint for OCI GenAI (embed and llm) models
 ENDPOINT = "https://inference.generativeai.eu-frankfurt-1.oci.oraclecloud.com"
 
-# directory where pdf must be
-BOOKS_DIR = "./books"
-
 # for chunking, in chars
 # in chars
 CHUNK_SIZE = 2000

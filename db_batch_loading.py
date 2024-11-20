@@ -21,8 +21,7 @@ from db_doc_loader_backend import (
 )
 
 from utils import get_console_logger, compute_stats
-
-from config import CHUNK_SIZE, CHUNK_OVERLAP, BOOKS_DIR
+from config import CHUNK_SIZE, CHUNK_OVERLAP
 
 
 #
