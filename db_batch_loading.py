@@ -17,7 +17,7 @@ from chunk_index_utils import (
 from db_doc_loader_backend import (
     get_list_collections,
     get_embed_model,
-    create_collection_and_add_docs_to_23ai,
+    manage_collection,
 )
 
 from utils import get_console_logger, compute_stats
@@ -86,8 +86,7 @@ if len(docs) > 0:
     logger.info(
         "Embedding and loading documents in collection %s ...", new_collection_name
     )
-
-    create_collection_and_add_docs_to_23ai(docs, embed_model, new_collection_name)
+    manage_collection(docs, embed_model, new_collection_name, is_new_collection=True)
 
     logger.info("Loading completed.")
     logger.info("")

@@ -8,11 +8,10 @@ from utils import get_console_logger
 logger = get_console_logger()
 
 try:
-    conn = get_db_connection()
-
-    logger.info("")
-    logger.info("Connection OK")
-    logger.info("")
+    with get_db_connection() as conn:
+        logger.info("")
+        logger.info("Connection OK")
+        logger.info("")
 
 except Exception as e:
     logger.error("Error testing connection...")

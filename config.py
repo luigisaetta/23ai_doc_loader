@@ -24,8 +24,6 @@ LANG_SUPPORTED = ["en", "it", "es", "fr", "de", "el", "nl", "ro"]
 # to batch embedding with OCI
 # with Cohere embeddings max is 96
 # value: OCI
-EMBED_MODEL_TYPE = "OCI"
-EMBED_BATCH_SIZE = 90
 OCI_EMBED_MODEL = "cohere.embed-multilingual-v3.0"
 
 # Oracle VS

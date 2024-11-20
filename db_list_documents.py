@@ -19,9 +19,8 @@ parser.add_argument("collection_name", type=str, help="collection name.")
 args = parser.parse_args()
 collection_name = args.collection_name
 
-conn = get_db_connection()
-
-docs_list = OracleVS4DBLoading.list_books_in_collection(conn, collection_name)
+with get_db_connection() as conn:
+    docs_list = OracleVS4DBLoading.list_books_in_collection(conn, collection_name)
 
 logger.info("")
 logger.info("List of documents in collection %s", collection_name)

@@ -10,9 +10,8 @@ from utils import get_console_logger
 # handle input for collection_name from command line
 logger = get_console_logger()
 
-conn = get_db_connection()
-
-coll_list = OracleVS4DBLoading.list_collections(conn)
+with get_db_connection() as conn:
+    coll_list = OracleVS4DBLoading.list_collections(conn)
 
 logger.info("")
 logger.info("List of collections:")

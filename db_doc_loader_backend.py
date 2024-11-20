@@ -34,18 +34,22 @@ def get_db_connection():
 
     if ADB:
         # connection to ADB, needs wallet
-        logger.info("Connecting to ADB database...")
-
-        conn_parms["config_dir"] = TNS_ADMIN
-        conn_parms["wallet_location"] = TNS_ADMIN
-        conn_parms["wallet_password"] = WALLET_PWD
+        conn_parms.update(
+            {
+                "config_dir": TNS_ADMIN,
+                "wallet_location": TNS_ADMIN,
+                "wallet_password": WALLET_PWD,
+            }
+        )
 
     logger.info("")
     logger.info("Connecting as USER: %s to DSN: %s", DB_USER, DSN)
 
-    conn = oracledb.connect(**conn_parms)
-
-    return conn
+    try:
+        return oracledb.connect(**conn_parms)
+    except oracledb.Error as e:
+        logger.error("Database connection failed: %s", str(e))
+        raise
 
 
 def get_embed_model(model_type="OCI"):
@@ -83,9 +87,8 @@ def get_list_collections():
     """
     return the list of available collections in the DB
     """
-    conn = get_db_connection()
-
-    list_collections = OracleVS4DBLoading.list_collections(conn)
+    with get_db_connection() as conn:
+        list_collections = OracleVS4DBLoading.list_collections(conn)
 
     return list_collections
 
@@ -94,11 +97,10 @@ def get_books(collection_name):
     """
     return the list of books in collection
     """
-    conn = get_db_connection()
-
-    list_books_in_collection = OracleVS4DBLoading.list_books_in_collection(
-        connection=conn, collection_name=collection_name
-    )
+    with get_db_connection() as conn:
+        list_books_in_collection = OracleVS4DBLoading.list_books_in_collection(
+            connection=conn, collection_name=collection_name
+        )
 
     return list_books_in_collection
 
@@ -144,8 +146,9 @@ def load_uploaded_file_in_vector_store(
             logger.info(
                 "Add book %s to an existing collection...", v_uploaded_file.name
             )
-
-            add_docs_to_23ai(docs, embed_model, collection_name)
+            manage_collection(
+                docs, embed_model, collection_name, is_new_collection=False
+            )
 
             result_status = "OK"
         else:
@@ -158,7 +161,7 @@ def load_uploaded_file_in_vector_store(
         logger.info("Creating the collection and adding documents...")
         logger.info("Add book %s to new collection...", v_uploaded_file.name)
 
-        create_collection_and_add_docs_to_23ai(docs, embed_model, collection_name)
+        manage_collection(docs, embed_model, collection_name, is_new_collection=True)
 
         result_status = "OK"
 
@@ -170,59 +173,37 @@ def delete_documents_in_collection(collection_name, doc_names):
     drop documents in the given collection
     """
     if len(doc_names) > 0:
-        conn = get_db_connection()
+        with get_db_connection() as conn:
+            logger.info("Delete docs: %s in collection %s", doc_names, collection_name)
+            OracleVS4DBLoading.delete_documents(conn, collection_name, doc_names)
 
-        logger.info("Delete docs: %s in collection %s", doc_names, collection_name)
-        OracleVS4DBLoading.delete_documents(conn, collection_name, doc_names)
 
-
-def create_collection_and_add_docs_to_23ai(docs, embed_model, collection_name):
+def manage_collection(docs, embed_model, collection_name, is_new_collection):
     """
-    create the collection and load docs in that collection
-    To be used only for a NEW collection
+    Create or update a collection in the vector store.
     """
-
-    try:
-        conn = get_db_connection()
-
-        OracleVS4DBLoading.from_documents(
-            docs,
-            embed_model,
-            client=conn,
-            table_name=collection_name,
-            distance_strategy=DistanceStrategy.COSINE,
-        )
-
-        logger.info("Created collection and documents saved...")
-
-    except oracledb.Error as e:
-        err_msg = "An error occurred in create_collection_and_add_docs: " + str(e)
-        logger.error(err_msg)
-
-
-def add_docs_to_23ai(docs, embed_model, collection_name):
-    """
-    add docs from a book to Oracle vector store
-    This is used for an existing collection
-    """
-
-    try:
-
-        conn = get_db_connection()
-
-        v_store = OracleVS4DBLoading(
-            client=conn,
-            table_name=collection_name,
-            distance_strategy=DistanceStrategy.COSINE,
-            embedding_function=embed_model,
-        )
-
-        logger.info("Saving new documents to Vector Store...")
-
-        v_store.add_documents(docs)
-
-        logger.info("Saved new documents to Vector Store !")
-
-    except oracledb.Error as e:
-        err_msg = "An error occurred in add_docs_to_23ai: " + str(e)
-        logger.error(err_msg)
+    with get_db_connection() as conn:
+        if is_new_collection:
+            logger.info(
+                "Creating collection '%s' and adding documents...", collection_name
+            )
+            OracleVS4DBLoading.from_documents(
+                docs,
+                embed_model,
+                client=conn,
+                table_name=collection_name,
+                distance_strategy=DistanceStrategy.COSINE,
+            )
+        else:
+            logger.info(
+                "Updating existing collection '%s' with new documents...",
+                collection_name,
+            )
+            v_store = OracleVS4DBLoading(
+                client=conn,
+                table_name=collection_name,
+                distance_strategy=DistanceStrategy.COSINE,
+                embedding_function=embed_model,
+            )
+            v_store.add_documents(docs)
+        logger.info("Operation completed for collection: %s", collection_name)

@@ -11,7 +11,7 @@ from glob import glob
 from db_doc_loader_backend import (
     get_list_collections,
     get_books,
-    add_docs_to_23ai,
+    manage_collection,
     get_embed_model,
 )
 from chunk_index_utils import load_book_and_split
@@ -67,4 +67,4 @@ for book_pathname in new_books_list:
 if len(docs) > 0:
     embed_model = get_embed_model()
 
-    add_docs_to_23ai(docs, embed_model, collection_name)
+    manage_collection(docs, embed_model, collection_name, is_new_collection=False)

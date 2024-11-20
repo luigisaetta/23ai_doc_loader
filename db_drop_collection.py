@@ -26,15 +26,12 @@ parser.add_argument("collection_name", type=str, help="collection name to drop."
 args = parser.parse_args()
 collection_name = args.collection_name
 
-conn = get_db_connection()
-
 logger.info("")
 logger.info("Dropping collection: %s", collection_name)
 logger.info("")
 
-OracleVS4DBLoading.drop_collection(conn, collection_name)
+with get_db_connection() as conn:
+    OracleVS4DBLoading.drop_collection(conn, collection_name)
 
 logger.info("Collection dropped !")
 logger.info("")
-
-conn.close()
