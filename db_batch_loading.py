@@ -7,12 +7,14 @@ Can be used ONLY for a new collection.
 sept 2024: refactored to reduce dependencies
 """
 
+import os
 import sys
 import argparse
 from glob import glob
 
 from chunk_index_utils import (
-    load_book_and_split,
+    load_and_split_pdf,
+    load_and_split_docx,
 )
 from db_doc_loader_backend import (
     get_list_collections,
@@ -53,7 +55,7 @@ collection_list = get_list_collections()
 
 if new_collection_name in collection_list:
     logger.info("")
-    logger.error("Collection %s already exist!", new_collection_name)
+    logger.error("Error: collection %s already exist!", new_collection_name)
     logger.error("Exiting !")
     logger.info("")
 
@@ -62,7 +64,7 @@ if new_collection_name in collection_list:
 logger.info("")
 
 # the list of books to be loaded
-books_list = glob(BOOKS_DIR + "/*.pdf")
+books_list = glob(BOOKS_DIR + "/*.pdf") + glob(BOOKS_DIR + "/*.docx")
 
 logger.info("These books will be loaded:")
 for book in books_list:
@@ -79,7 +81,13 @@ docs = []
 
 for book in books_list:
     logger.info("Chunking: %s", book)
-    docs += load_book_and_split(book, CHUNK_SIZE, CHUNK_OVERLAP)
+    # get the file extension
+    _, file_ext = os.path.splitext(book)
+
+    if file_ext == ".pdf":
+        docs += load_and_split_pdf(book, CHUNK_SIZE, CHUNK_OVERLAP)
+    if file_ext == ".docx":
+        docs += load_and_split_docx(book, CHUNK_SIZE, CHUNK_OVERLAP)
 
 if len(docs) > 0:
     logger.info("")
@@ -94,7 +102,7 @@ if len(docs) > 0:
     mean, stdev, perc_75 = compute_stats(docs)
 
     logger.info("")
-    logger.info("Statistics on the distribution of chunk lengths:")
+    logger.info("Statistics on the distribution of chunks' lengths:")
     logger.info("Total num. of chunks loaded: %s", len(docs))
     logger.info("Avg. length: %s (chars)", mean)
     logger.info("Std dev: %s (chars)", stdev)

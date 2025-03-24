@@ -14,12 +14,10 @@ from oraclevs_4_db_loading import OracleVS4DBLoading
 from translations import translations
 from utils import get_console_logger, check_value_in_list
 
-from chunk_index_utils import (
-    load_book_and_split,
-)
+from chunk_index_utils import load_and_split_pdf, load_and_split_docx
 
 from config_private import DB_USER, DB_PWD, DSN, TNS_ADMIN, WALLET_PWD, COMPARTMENT_ID
-from config import ENDPOINT, OCI_EMBED_MODEL, ADB
+from config import ENDPOINT, OCI_EMBED_MODEL, ADB, CHUNK_SIZE, CHUNK_OVERLAP
 
 logger = get_console_logger()
 
@@ -118,7 +116,7 @@ def write_temporary_file(v_tmp_dir_name, v_uploaded_file):
 
 
 def load_uploaded_file_in_vector_store(
-    v_uploaded_file, collection_name, chunk_size, chunk_overlap
+    v_uploaded_file, collection_name, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
 ):
     """
     load the uploaded file in the Vector Store and index
@@ -134,7 +132,14 @@ def load_uploaded_file_in_vector_store(
         temp_file_path = write_temporary_file(tmp_dir_name, v_uploaded_file)
 
         # split in docs and prepare for loading
-        docs = load_book_and_split(temp_file_path, chunk_size, chunk_overlap)
+        _, file_ext = os.path.splitext(temp_file_path)
+
+        docs = []
+
+        if file_ext == ".pdf":
+            docs += load_and_split_pdf(temp_file_path, chunk_size, chunk_overlap)
+        if file_ext == ".docx":
+            docs += load_and_split_docx(temp_file_path, chunk_size, chunk_overlap)
 
     # check if collection exists
     if collection_name in get_list_collections():

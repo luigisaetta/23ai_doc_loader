@@ -14,7 +14,7 @@ from db_doc_loader_backend import (
     manage_collection,
     get_embed_model,
 )
-from chunk_index_utils import load_book_and_split
+from chunk_index_utils import load_and_split_pdf, load_and_split_docx
 from utils import get_console_logger
 from config import CHUNK_SIZE, CHUNK_OVERLAP
 
@@ -45,7 +45,8 @@ if collection_name not in collection_list:
 # check for existing documents in collection
 books_list = get_books(collection_name)
 
-new_books_list = glob(BOOKS_DIR + "/*.pdf")
+# added docx (21/03)
+new_books_list = glob(BOOKS_DIR + "/*.pdf") + glob(BOOKS_DIR + "/*.docx")
 
 logger.info("")
 
@@ -58,7 +59,13 @@ for book_pathname in new_books_list:
     if os.path.basename(book_pathname) not in books_list:
         logger.info("Loading %s", book_pathname)
 
-        docs += load_book_and_split(book_pathname, CHUNK_SIZE, CHUNK_OVERLAP)
+        # get the file extension
+        _, file_ext = os.path.splitext(book_pathname)
+
+        if file_ext == ".pdf":
+            docs += load_and_split_pdf(book_pathname, CHUNK_SIZE, CHUNK_OVERLAP)
+        if file_ext == ".docx":
+            docs += load_and_split_docx(book_pathname, CHUNK_SIZE, CHUNK_OVERLAP)
 
     else:
         logger.info("Document %s already loaded, skipping...", book_pathname)

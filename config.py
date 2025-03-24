@@ -10,7 +10,6 @@ Python Version: 3.11
 ENDPOINT = "https://inference.generativeai.eu-frankfurt-1.oci.oraclecloud.com"
 
 # for chunking, in chars
-# in chars
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 100
 
