@@ -13,11 +13,17 @@ from langchain_community.embeddings import OCIGenAIEmbeddings
 from oraclevs_4_db_loading import OracleVS4DBLoading
 from translations import translations
 from utils import get_console_logger, check_value_in_list
-
-from chunk_index_utils import load_and_split_pdf, load_and_split_docx
+from custom_rest_embeddings import CustomRESTEmbeddings
+from chunk_index_utils import load_and_split_pdf, load_and_split_docx, load_and_split_md
 
 from config_private import DB_USER, DB_PWD, DSN, TNS_ADMIN, WALLET_PWD, COMPARTMENT_ID
 from config import ENDPOINT, OCI_EMBED_MODEL, ADB, CHUNK_SIZE, CHUNK_OVERLAP
+from config import (
+    EMBED_MODEL_TYPE,
+    NVIDIA_EMBED_MODEL,
+    NVIDIA_EMBED_MODEL_URL,
+    AUTH_TYPE,
+)
 
 logger = get_console_logger()
 
@@ -54,21 +60,29 @@ def get_embed_model(model_type="OCI"):
     """
     get the Embeddings Model
     """
-    check_value_in_list(model_type, ["OCI"])
-
-    logger.info("")
-    logger.info("Using embedding model: %s", OCI_EMBED_MODEL)
-    logger.info("")
+    check_value_in_list(model_type, ["OCI", "NVIDIA"])
 
     embed_model = None
 
     if model_type == "OCI":
+        EMBED_MODEL_ID = OCI_EMBED_MODEL
+
         embed_model = OCIGenAIEmbeddings(
-            auth_type="API_KEY",
+            auth_type=AUTH_TYPE,
             model_id=OCI_EMBED_MODEL,
             service_endpoint=ENDPOINT,
             compartment_id=COMPARTMENT_ID,
         )
+    elif model_type == "NVIDIA":
+        EMBED_MODEL_ID = NVIDIA_EMBED_MODEL
+
+        embed_model = CustomRESTEmbeddings(
+            api_url=NVIDIA_EMBED_MODEL_URL, model=NVIDIA_EMBED_MODEL
+        )
+
+    logger.info("")
+    logger.info("Using embedding model: %s", EMBED_MODEL_ID)
+    logger.info("")
 
     return embed_model
 
@@ -123,7 +137,7 @@ def load_uploaded_file_in_vector_store(
 
     this handles also the check to see if the file alredy exists
     """
-    embed_model = get_embed_model()
+    embed_model = get_embed_model(EMBED_MODEL_TYPE)
 
     result_status = ""
 

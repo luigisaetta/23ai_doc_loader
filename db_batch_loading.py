@@ -12,10 +12,7 @@ import sys
 import argparse
 from glob import glob
 
-from chunk_index_utils import (
-    load_and_split_pdf,
-    load_and_split_docx,
-)
+from chunk_index_utils import load_and_split_pdf, load_and_split_docx, load_and_split_md
 from db_doc_loader_backend import (
     get_list_collections,
     get_embed_model,
@@ -23,7 +20,7 @@ from db_doc_loader_backend import (
 )
 
 from utils import get_console_logger, compute_stats
-from config import CHUNK_SIZE, CHUNK_OVERLAP
+from config import CHUNK_SIZE, CHUNK_OVERLAP, EMBED_MODEL_TYPE
 
 
 #
@@ -48,7 +45,7 @@ logger.info("Batch loading books in collection %s ...", new_collection_name)
 logger.info("")
 
 # init models
-embed_model = get_embed_model()
+embed_model = get_embed_model(EMBED_MODEL_TYPE)
 
 # check that the collection doesn't exist yet
 collection_list = get_list_collections()
@@ -64,7 +61,7 @@ if new_collection_name in collection_list:
 logger.info("")
 
 # the list of books to be loaded
-books_list = glob(BOOKS_DIR + "/*.pdf") + glob(BOOKS_DIR + "/*.docx")
+books_list = glob(BOOKS_DIR + "/*.pdf") + glob(BOOKS_DIR + "/*.docx") + glob(BOOKS_DIR + "/*.md")
 
 logger.info("These books will be loaded:")
 for book in books_list:
@@ -88,6 +85,9 @@ for book in books_list:
         docs += load_and_split_pdf(book, CHUNK_SIZE, CHUNK_OVERLAP)
     if file_ext == ".docx":
         docs += load_and_split_docx(book, CHUNK_SIZE, CHUNK_OVERLAP)
+    if file_ext == ".md":
+        docs += load_and_split_md(book, CHUNK_SIZE, CHUNK_OVERLAP)
+
 
 if len(docs) > 0:
     logger.info("")

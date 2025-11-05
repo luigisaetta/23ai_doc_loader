@@ -3,7 +3,8 @@ Extensions to Oracle VS for the db_loading utility
 """
 
 import os
-from oracledb import Connection
+from collections import Counter
+from oracledb import Connection, DB_TYPE_VECTOR
 
 from langchain_community.vectorstores.oraclevs import OracleVS
 
@@ -66,6 +67,42 @@ class OracleVS4DBLoading(OracleVS):
                 list_books.append(row[0])
 
         return list_books
+
+    @classmethod
+    def analyze_collection(cls, connection: Connection, collection_name: str) -> str:
+        """
+        analyze completely a collection and return a text containing a short report
+        """
+        sql = f"SELECT * FROM {collection_name}"
+
+        with connection.cursor() as cur:
+            cur.execute(sql)
+
+            descs = cur.description  # column metadata
+
+            records = 0
+            dim_counter = Counter()
+            format_counter = Counter()
+            # here we analyse the vector columns
+            # we compute the number of records
+            # and the number of different dimensions and formats
+            for row in cur:
+                records += 1
+                for idx, _ in enumerate(row):
+                    info = descs[idx]
+                    if info.type_code == DB_TYPE_VECTOR:
+                        dims = info.vector_dimensions
+                        fmt = info.vector_format
+                        dim_counter[dims] += 1
+                        format_counter[fmt] += 1
+
+        # output
+        report = f"Analyzed collection: {collection_name}\n"
+        report += f"Total chunks fetched: {records}\n"
+        report += f"Vector dimensions seen (count): {dict(dim_counter)}\n"
+        report += f"Vector formats seen (count): {dict(format_counter)}"
+
+        return report
 
     @classmethod
     def delete_documents(

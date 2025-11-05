@@ -72,9 +72,7 @@ def compute_stats(list_docs):
     lengths = [len(d.page_content) for d in list_docs]
 
     mean_length = int(round(np.mean(lengths), 0))
-
     std_dev = int(round(np.std(lengths), 0))
-
     perc_75_len = int(round(np.percentile(lengths, 75), 0))
 
     return mean_length, std_dev, perc_75_len
